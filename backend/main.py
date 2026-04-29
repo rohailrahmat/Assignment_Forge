@@ -32,8 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-OUTPUTS_DIR = Path("outputs")
-OUTPUTS_DIR.mkdir(exist_ok=True)
+OUTPUTS_DIR = Path("/tmp/outputs") if os.environ.get("VERCEL") else Path("outputs")
+OUTPUTS_DIR.mkdir(exist_ok=True, parents=True)
 
 init_db()
 

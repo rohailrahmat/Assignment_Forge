@@ -3,7 +3,8 @@ import json
 from datetime import datetime
 
 
-DB_PATH = "assignmentforge.db"
+import os
+DB_PATH = "/tmp/assignmentforge.db" if os.environ.get("VERCEL") else "assignmentforge.db"
 
 
 def init_db():

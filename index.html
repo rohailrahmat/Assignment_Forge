@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AssignmentForge — AI Assignment Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0908;
+  --ink2:#1c1917;
+  --ink3:#2c2825;
+  --surface:#f5f0e8;
+  --surface2:#ede8dc;
+  --surface3:#e0d9cc;
+  --gold:#b8860b;
+  --gold2:#d4a017;
+  --gold3:#f0c040;
+  --goldlight:#fdf3dc;
+  --text:#0a0908;
+  --text2:#3d3530;
+  --text3:#6b6158;
+  --text4:#9c9088;
+  --border:rgba(10,9,8,0.12);
+  --border2:rgba(10,9,8,0.22);
+  --border3:rgba(10,9,8,0.06);
+  --white:#ffffff;
+  --r4:4px;
+  --r8:8px;
+  --r12:12px;
+  --r16:16px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.06);
+  --shadow2:0 2px 8px rgba(0,0,0,0.12),0 8px 32px rgba(0,0,0,0.08);
+}
+
+html,body{height:100%;overflow:hidden}
+
+body{
+  font-family:'Instrument Sans',sans-serif;
+  background:var(--surface);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+}
+
+/* ═══════════════════════════════ LAYOUT ═══════════════════════════════ */
+.shell{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  grid-template-rows:60px 1fr;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ═══════════════════════════════ TOPBAR ═══════════════════════════════ */
+.topbar{
+  grid-column:1/-1;
+  background:var(--ink);
+  display:flex;
+  align-items:center;
+  padding:0 28px;
+  gap:20px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  position:relative;
+  z-index:20;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+}
+
+.logo-mark{
+  width:34px;height:34px;
+  background:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r4);
+  flex-shrink:0;
+}
+
+.logo-mark svg{width:18px;height:18px;fill:#0a0908;}
+
+.logo-text{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;
+  font-weight:700;
+  color:#f5f0e8;
+  letter-spacing:-0.3px;
+  line-height:1;
+}
+
+.logo-text span{color:var(--gold);}
+
+.topbar-divider{
+  width:1px;height:24px;
+  background:rgba(255,255,255,0.1);
+}
+
+.topbar-pill{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  font-weight:500;
+  letter-spacing:0.12em;
+  color:rgba(255,255,255,0.35);
+  text-transform:uppercase;
+  border:1px solid rgba(255,255,255,0.12);
+  padding:4px 10px;
+  border-radius:20px;
+}
+
+.topbar-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.api-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  cursor:pointer;
+  padding:6px 12px;
+  border-radius:var(--r4);
+  border:1px solid rgba(255,255,255,0.1);
+  transition:all 0.2s;
+  background:transparent;
+}
+.api-indicator:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);}
+
+.api-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#4a7c59;
+  box-shadow:0 0 6px rgba(74,124,89,0.8);
+}
+.api-dot.off{background:#7c4a4a;box-shadow:0 0 6px rgba(124,74,74,0.8);}
+
+.tb-btn{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.14);
+  color:rgba(255,255,255,0.55);
+  padding:7px 16px;
+  border-radius:var(--r4);
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:0.02em;
+}
+.tb-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.85);}
+.tb-btn.gold{background:var(--gold);border-color:var(--gold);color:#0a0908;font-weight:700;}
+.tb-btn.gold:hover{background:var(--gold2);}
+
+/* ═══════════════════════════════ SIDEBAR ═══════════════════════════════ */
+.sidebar{
+  background:var(--white);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+.sidebar-top{
+  padding:20px 20px 0;
+  border-bottom:1px solid var(--border3);
+  position:sticky;top:0;background:var(--white);z-index:5;
+}
+
+.section-tabs{
+  display:flex;
+  gap:0;
+  border:1px solid var(--border);
+  border-radius:var(--r8);
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.stab{
+  flex:1;
+  font-family:'Instrument Sans',sans-serif;
+  font-size:11px;font-weight:600;
+  background:transparent;
+  border:none;
+  color:var(--text3);
+  padding:8px 0;
+  cursor:pointer;
+  transition:all 0.2s;
+  letter-spacing:0.04em;
+}
+.stab.active{background:var(--ink);color:var(--surface);}
+.stab:hover:not(.active){background:var(--surface3);}
+
+.sidebar-body{padding:16px 20px 24px;}
+
+.field-section{
+  margin-bottom:20px;
+  display:none;
+}
+.field-section.active{display:block;}
+
+.section-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--text4);
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label::after{
+  content:'';flex:1;height:1px;
+  background:var(--border3);
+}
+
+.field{margin-bottom:12px;}
+
+.field-lbl{
+  font-size:11px;font-weight:600;
+  color:var(--text2);
+  margin-bottom:5px;
+  display:block;
+  letter-spacing:0.03em;
+}
+.field-lbl .req{color:var(--gold);margin-left:2px;}
+
+.finput,.fselect,.ftextarea{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:13px;
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:var(--r8);
+  outline:none;
+  transition:all 0.18s;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.finput:focus,.fselect:focus,.ftextarea:focus{
+  border-color:var(--gold);
+  background:var(--white);
+  box-shadow:0 0 0 3px rgba(184,134,11,0.1);
+}
+.finput::placeholder,.ftextarea::placeholder{color:var(--text4);}
+.fselect{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6158' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+  cursor:pointer;
+}
+.fselect option{background:var(--white);color:var(--text);}
+.ftextarea{resize:vertical;min-height:80px;line-height:1.6;}
+
+.type-cards{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:4px;
+}
+
+.type-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--r8);
+  padding:10px 10px 8px;
+  cursor:pointer;
+  transition:all 0.18s;
+  text-align:left;
+}
+.type-card:hover{border-color:var(--gold2);background:var(--goldlight);}
+.type-card.selected{border-color:var(--gold);background:var(--goldlight);box-shadow:0 0 0 3px rgba(184,134,11,0.1);}
+
+.tc-code{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:500;
+  color:var(--gold);
+  margin-bottom:4px;
+  display:block;
+}
+.tc-name{
+  font-size:11px;font-weight:600;
+  color:var(--text2);
+  line-height:1.3;
+}
+.tc-course{
+  font-size:10px;
+  color:var(--text4);
+  margin-top:3px;
+}
+
+.sidebar-footer{
+  margin-top:auto;
+  padding:16px 20px 20px;
+  border-top:1px solid var(--border3);
+  background:var(--white);
+  position:sticky;bottom:0;
+}
+
+.gen-btn{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:14px;font-weight:700;
+  letter-spacing:0.05em;
+  width:100%;
+  background:var(--ink);
+  color:var(--surface);
+  border:none;
+  padding:14px 20px;
+  border-radius:var(--r8);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.gen-btn::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--gold) 0%,transparent 60%);
+  opacity:0;
+  transition:opacity 0.3s;
+}
+.gen-btn:hover{background:#1c1917;transform:translateY(-1px);box-shadow:var(--shadow2);}
+.gen-btn:hover::before{opacity:0.08;}
+.gen-btn:active{transform:translateY(0);}
+.gen-btn:disabled{background:var(--surface3);color:var(--text4);cursor:not-allowed;transform:none;box-shadow:none;}
+.gen-btn:disabled::before{opacity:0;}
+
+.gen-icon{font-size:16px;}
+
+.spin-ring{
+  width:16px;height:16px;
+  border:2px solid rgba(245,240,232,0.3);
+  border-top-color:var(--surface);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+  display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════ MAIN ═══════════════════════════════ */
+.main{
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:var(--surface2);
+}
+
+.main-tabs{
+  display:flex;
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  gap:0;
+}
+
+.mtab{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  color:var(--text3);
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  padding:14px 18px;
+  cursor:pointer;
+  transition:all 0.18s;
+  letter-spacing:0.03em;
+  margin-bottom:-1px;
+}
+.mtab.active{color:var(--ink);border-bottom-color:var(--gold);}
+.mtab:hover:not(.active){color:var(--text2);}
+
+.tab-content{
+  flex:1;
+  overflow-y:auto;
+  display:none;
+}
+.tab-content.active{display:flex;flex-direction:column;}
+.tab-content::-webkit-scrollbar{width:4px;}
+.tab-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ═══════════════════════════════ STATES ═══════════════════════════════ */
+.empty-state{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  padding:60px 40px;
+  text-align:center;
+}
+
+.empty-ornament{
+  font-family:'Cormorant Garamond',serif;
+  font-size:96px;
+  line-height:1;
+  color:var(--surface3);
+  user-select:none;
+  font-style:italic;
+}
+
+.empty-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;font-weight:600;
+  color:var(--text2);
+}
+
+.empty-sub{
+  font-size:13px;
+  color:var(--text4);
+  max-width:340px;
+  line-height:1.7;
+}
+
+.steps-row{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+}
+
+.step-pill{
+  font-size:11px;font-weight:600;
+  background:var(--white);
+  border:1px solid var(--border);
+  color:var(--text3);
+  padding:6px 12px;
+  border-radius:20px;
+}
+
+/* Loading */
+.loading-state{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:28px;
+  padding:60px;
+}
+
+.forge-ring{
+  width:52px;height:52px;
+  border:2px solid var(--border);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.9s linear infinite;
+}
+
+.loading-label{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-style:italic;
+  color:var(--text2);
+}
+
+.progress-track{
+  width:280px;
+  height:2px;
+  background:var(--surface3);
+  border-radius:2px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:var(--gold);
+  border-radius:2px;
+  width:0%;
+  transition:width 0.6s ease;
+}
+
+.step-list{
+  display:flex;flex-direction:column;gap:8px;width:280px;
+}
+.step-item{
+  display:flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--text4);
+  transition:color 0.3s;
+}
+.step-item.active{color:var(--text2);}
+.step-item.done{color:var(--gold);}
+
+.step-circle{
+  width:20px;height:20px;border-radius:50%;
+  border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-size:9px;
+  transition:all 0.3s;
+}
+.step-item.active .step-circle{border-color:var(--gold2);background:var(--goldlight);}
+.step-item.done .step-circle{border-color:var(--gold);background:var(--gold);color:#fff;}
+
+/* ═══════════════════════════════ PREVIEW ═══════════════════════════════ */
+.preview-wrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.preview-bar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 24px;
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.preview-info{flex:1;}
+.preview-name{
+  font-size:14px;font-weight:700;
+  color:var(--text);
+  line-height:1.2;
+}
+.preview-sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text4);
+  margin-top:2px;
+}
+
+.exp-btn{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  border-radius:var(--r8);
+  padding:8px 16px;
+  cursor:pointer;
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:7px;
+  transition:all 0.18s;
+  letter-spacing:0.03em;
+  white-space:nowrap;
+}
+.exp-copy{background:var(--white);color:var(--text2);}
+.exp-copy:hover{border-color:var(--border2);color:var(--text);}
+.exp-docx{background:var(--ink);color:var(--surface);border-color:var(--ink);}
+.exp-docx:hover{background:var(--ink2);transform:translateY(-1px);box-shadow:var(--shadow);}
+
+.preview-scroll{
+  flex:1;
+  overflow-y:auto;
+  padding:32px 40px;
+}
+.preview-scroll::-webkit-scrollbar{width:4px;}
+.preview-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ─── Document ─── */
+.doc-sheet{
+  max-width:760px;
+  margin:0 auto;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r12);
+  box-shadow:var(--shadow2);
+  overflow:hidden;
+}
+
+.doc-header-band{
+  background:var(--ink);
+  padding:40px 56px 36px;
+  position:relative;
+}
+.doc-header-band::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:var(--gold);
+}
+
+.doc-course-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:500;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:16px;
+  display:block;
+}
+
+.doc-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:30px;font-weight:700;
+  color:var(--surface);
+  line-height:1.2;
+  margin-bottom:20px;
+}
+
+.doc-meta-row{
+  display:flex;gap:32px;
+  flex-wrap:wrap;
+}
+
+.doc-meta-item label{
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:rgba(245,240,232,0.3);
+  margin-bottom:3px;
+}
+.doc-meta-item span{
+  font-size:13px;font-weight:600;
+  color:rgba(245,240,232,0.85);
+}
+
+.doc-body{padding:40px 56px 56px;}
+
+/* Body elements */
+.doc-body h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;font-weight:700;
+  color:var(--gold);
+  margin:32px 0 14px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+  line-height:1.2;
+}
+.doc-body h1:first-child{margin-top:0;}
+
+.doc-body h2{
+  font-size:16px;font-weight:700;
+  color:var(--ink);
+  margin:24px 0 10px;
+  letter-spacing:0.01em;
+}
+
+.doc-body h3{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:500;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin:20px 0 8px;
+}
+
+.doc-body h4{
+  font-size:13px;font-weight:700;
+  color:var(--text2);
+  margin:16px 0 6px;
+}
+
+.doc-body p{
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.75;
+  margin-bottom:10px;
+}
+
+.doc-body ul,.doc-body ol{
+  padding-left:22px;
+  margin-bottom:12px;
+}
+.doc-body li{
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.7;
+  margin-bottom:4px;
+}
+
+/* Tables */
+.doc-body .tbl-wrap{
+  overflow-x:auto;
+  margin:14px 0 22px;
+  border-radius:var(--r8);
+  border:1px solid var(--border);
+}
+.doc-body table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+.doc-body thead th{
+  background:var(--ink);
+  color:var(--gold);
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:10px 14px;
+  text-align:left;
+  white-space:nowrap;
+}
+.doc-body tbody td{
+  padding:9px 14px;
+  border-bottom:1px solid var(--border3);
+  color:var(--text2);
+  vertical-align:top;
+  line-height:1.5;
+}
+.doc-body tbody tr:last-child td{border-bottom:none;}
+.doc-body tbody tr:nth-child(even) td{background:var(--surface);}
+.doc-body tbody tr:hover td{background:var(--goldlight);}
+
+/* Screenshot note */
+.ss-note{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  background:var(--goldlight);
+  border:1px dashed var(--gold2);
+  border-radius:var(--r8);
+  padding:12px 16px;
+  margin:12px 0 18px;
+}
+.ss-icon{
+  width:36px;height:36px;
+  background:var(--gold);
+  border-radius:var(--r4);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-size:16px;
+}
+.ss-text{flex:1;}
+.ss-text strong{
+  display:block;
+  font-size:11px;font-weight:700;
+  color:var(--gold);
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  margin-bottom:3px;
+  font-family:'JetBrains Mono',monospace;
+}
+.ss-text span{
+  font-size:12px;
+  color:var(--text2);
+  line-height:1.5;
+}
+
+/* ═══════════════════════════════ HISTORY ═══════════════════════════════ */
+.history-wrap{
+  padding:28px;
+  flex:1;
+}
+
+.history-head{
+  display:flex;align-items:baseline;gap:10px;margin-bottom:20px;
+}
+.history-head h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:700;
+  color:var(--text);
+}
+.history-count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text4);
+  background:var(--surface3);
+  padding:3px 8px;border-radius:20px;
+}
+
+.history-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:12px;
+}
+
+.history-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r12);
+  padding:18px 20px;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.history-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gold);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform 0.25s;
+}
+.history-card:hover{border-color:var(--gold2);box-shadow:var(--shadow);transform:translateY(-2px);}
+.history-card:hover::before{transform:scaleX(1);}
+
+.hc-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:500;
+  letter-spacing:0.1em;
+  background:var(--goldlight);
+  color:var(--gold);
+  padding:3px 8px;
+  border-radius:20px;
+  display:inline-block;
+  margin-bottom:10px;
+  border:1px solid rgba(184,134,11,0.2);
+}
+
+.hc-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.hc-type{font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.4;}
+.hc-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--text4);
+  border-top:1px solid var(--border3);
+  padding-top:10px;margin-top:2px;
+}
+
+.no-history{
+  text-align:center;padding:60px 20px;
+  color:var(--text4);
+  font-size:13px;
+}
+
+/* ═══════════════════════════════ API KEY MODAL ═══════════════════════════════ */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(10,9,8,0.7);
+  z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+
+.modal{
+  background:var(--white);
+  border-radius:var(--r16);
+  padding:36px;
+  width:420px;
+  max-width:90vw;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  border:1px solid var(--border);
+  transform:translateY(8px);
+  transition:transform 0.25s;
+}
+.modal-overlay.open .modal{transform:translateY(0);}
+
+.modal h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px;font-weight:700;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.modal p{font-size:13px;color:var(--text3);margin-bottom:20px;line-height:1.6;}
+
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-btn{
+  flex:1;
+  font-family:'Instrument Sans',sans-serif;
+  font-size:13px;font-weight:600;
+  padding:10px 20px;
+  border-radius:var(--r8);
+  cursor:pointer;
+  border:1px solid var(--border);
+  transition:all 0.18s;
+}
+.modal-btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink);}
+.modal-btn.primary:hover{background:var(--ink2);}
+.modal-btn.secondary{background:var(--white);color:var(--text2);}
+.modal-btn.secondary:hover{background:var(--surface);}
+
+.modal-note{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text4);
+  margin-top:14px;
+  padding:10px 12px;
+  background:var(--surface);
+  border-radius:var(--r4);
+  line-height:1.6;
+  border-left:2px solid var(--gold);
+}
+
+/* ═══════════════════════════════ TOAST ═══════════════════════════════ */
+.toast-stack{
+  position:fixed;
+  bottom:24px;right:24px;
+  display:flex;flex-direction:column;gap:8px;
+  z-index:200;
+}
+
+.toast{
+  display:flex;align-items:center;gap:10px;
+  background:var(--ink);
+  border-radius:var(--r8);
+  padding:12px 18px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.1);
+  font-size:13px;font-weight:600;
+  color:var(--surface);
+  min-width:240px;
+  animation:toastIn 0.25s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast.success .toast-dot{background:#4a7c59;}
+.toast.error .toast-dot{background:#7c4a4a;}
+.toast.info .toast-dot{background:var(--gold);}
+
+/* ═══════════════════════════════ MISC ═══════════════════════════════ */
+.divider-line{
+  height:1px;
+  background:var(--border3);
+  margin:14px 0;
+}
+
+.word-count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text4);
+  text-align:right;
+  margin-top:4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="shell">
+<header class="topbar">
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <span class="logo-text">Assignment<span>Forge</span></span>
+  </a>
+  <div class="topbar-divider"></div>
+  <span class="topbar-pill">AI-POWERED · DOCX EXPORT</span>
+
+  <div class="topbar-right">
+    <button class="api-indicator" onclick="openApiModal()" id="apiIndicator">
+      <div class="api-dot off" id="apiDot"></div>
+      <span id="apiLabel">Set API Key</span>
+    </button>
+    <button class="tb-btn" onclick="clearAll()">Clear Form</button>
+  </div>
+</header>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="section-tabs">
+      <button class="stab active" onclick="switchSTab('details',this)">Details</button>
+      <button class="stab" onclick="switchSTab('type',this)">Type</button>
+      <button class="stab" onclick="switchSTab('options',this)">Options</button>
+    </div>
+  </div>
+
+  <div class="sidebar-body">
+
+    <!-- DETAILS TAB -->
+    <div class="field-section active" id="stab-details">
+      <div class="section-label">Student Info</div>
+
+      <div class="field">
+        <label class="field-lbl">Student Name <span class="req">*</span></label>
+        <input class="finput" id="studentName" type="text" placeholder="e.g. Sarah Ahmed" autocomplete="off"/>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Course Code <span class="req">*</span></label>
+        <select class="fselect" id="courseCode">
+          <option value="">— Select Course —</option>
+          <option value="SMALT">SMALT – Social Media Aggregators</option>
+          <option value="CA-CNTOR">CA-CNTOR – Content Outreach</option>
+          <option value="CNTCR">CNTCR – Content Creation</option>
+          <option value="STWBD">STWBD – Storyboarding</option>
+          <option value="CA-SEMKT">CA-SEMKT – Search Engine Mktg</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Assignment Number <span class="req">*</span></label>
+        <select class="fselect" id="assignmentNum">
+          <option value="">— Select —</option>
+          <option value="1">Assignment 1</option>
+          <option value="2">Assignment 2</option>
+          <option value="3">Assignment 3</option>
+          <option value="4">Assignment 4 (Final)</option>
+        </select>
+      </div>
+
+      <div class="divider-line"></div>
+      <div class="section-label">Business (Optional)</div>
+
+      <div class="field">
+        <label class="field-lbl">Business / Brand Name</label>
+        <input class="finput" id="businessName" type="text" placeholder="e.g. Bloom Coffee Co."/>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Website URL</label>
+        <input class="finput" id="businessUrl" type="url" placeholder="https://bloomcoffee.com"/>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Industry</label>
+        <input class="finput" id="industry" type="text" placeholder="e.g. Food & Beverage"/>
+      </div>
+    </div>
+
+    <!-- TYPE TAB -->
+    <div class="field-section" id="stab-type">
+      <div class="section-label">SMALT</div>
+      <div class="type-cards">
+        <div class="type-card" onclick="selectType('T1',this)">
+          <span class="tc-code">T1</span>
+          <div class="tc-name">Content Aggregators Research</div>
+          <div class="tc-course">SMALT · A1</div>
+        </div>
+        <div class="type-card" onclick="selectType('T2',this)">
+          <span class="tc-code">T2</span>
+          <div class="tc-name">Aggregators Critique</div>
+          <div class="tc-course">SMALT · A2</div>
+        </div>
+        <div class="type-card" onclick="selectType('T3',this)">
+          <span class="tc-code">T3</span>
+          <div class="tc-name">Listening Tools Critique</div>
+          <div class="tc-course">SMALT · A3</div>
+        </div>
+      </div>
+
+      <div class="divider-line"></div>
+      <div class="section-label">CA-CNTOR</div>
+      <div class="type-cards">
+        <div class="type-card" onclick="selectType('T4',this)">
+          <span class="tc-code">T4</span>
+          <div class="tc-name">Goals & Objectives</div>
+          <div class="tc-course">CA-CNTOR · A1 P1</div>
+        </div>
+        <div class="type-card" onclick="selectType('T5',this)">
+          <span class="tc-code">T5</span>
+          <div class="tc-name">Target Audience</div>
+          <div class="tc-course">CA-CNTOR · A1 P2</div>
+        </div>
+        <div class="type-card" onclick="selectType('T6',this)">
+          <span class="tc-code">T6</span>
+          <div class="tc-name">Content Plan & Viral</div>
+          <div class="tc-course">CA-CNTOR · A1 P3</div>
+        </div>
+        <div class="type-card" onclick="selectType('T7',this)">
+          <span class="tc-code">T7</span>
+          <div class="tc-name">Profiles Outreach-Ready</div>
+          <div class="tc-course">CA-CNTOR · A2</div>
+        </div>
+        <div class="type-card" onclick="selectType('T8',this)">
+          <span class="tc-code">T8</span>
+          <div class="tc-name">Influencer Outreach</div>
+          <div class="tc-course">CA-CNTOR · A3</div>
+        </div>
+        <div class="type-card" onclick="selectType('T9',this)">
+          <span class="tc-code">T9</span>
+          <div class="tc-name">Final Project Report</div>
+          <div class="tc-course">CA-CNTOR · A4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONS TAB -->
+    <div class="field-section" id="stab-options">
+      <div class="section-label">Generation Options</div>
+
+      <div class="field">
+        <label class="field-lbl">Instructor Name</label>
+        <input class="finput" id="instructorName" type="text" placeholder="e.g. Prof. Martinez"/>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Due Date / Session</label>
+        <input class="finput" id="dueDate" type="text" placeholder="e.g. Session 2, Week 3"/>
+      </div>
+
+      <div class="field">
+        <label class="field-lbl">Writing Tone</label>
+        <select class="fselect" id="tone">
+          <option value="academic">Academic & Formal</option>
+          <option value="professional">Professional & Clear</option>
+          <option value="conversational">Conversational</option>
+        </select>
+      </div>
+
+      <div class="divider-line"></div>
+      <div class="section-label">Custom Instructions</div>
+
+      <div class="field">
+        <textarea class="ftextarea" id="extraInstructions" placeholder="Additional requirements, specific focus areas, platforms to emphasize, word count targets..."></textarea>
+      </div>
+    </div>
+
+  </div><!-- end sidebar-body -->
+
+  <div class="sidebar-footer">
+    <div id="selectedTypeDisplay" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text4);margin-bottom:10px;min-height:14px;"></div>
+    <button class="gen-btn" id="generateBtn" onclick="generateAssignment()">
+      <div class="spin-ring" id="spinRing"></div>
+      <span class="gen-icon" id="genIcon">⚡</span>
+      <span id="genLabel">GENERATE ASSIGNMENT</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <div class="main-tabs">
+    <button class="mtab active" onclick="switchMTab('preview',this)">Preview & Export</button>
+    <button class="mtab" onclick="switchMTab('history',this)">History (<span id="histCount">0</span>)</button>
+  </div>
+
+  <!-- PREVIEW TAB -->
+  <div class="tab-content active" id="mtab-preview">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-ornament">AF</div>
+      <div class="empty-title">Ready to forge</div>
+      <div class="empty-sub">Configure your assignment in the sidebar, then hit Generate. The complete document — every section, table, and screenshot note — appears here.</div>
+      <div class="steps-row">
+        <span class="step-pill">1. Fill Details</span>
+        <span class="step-pill">2. Pick Type</span>
+        <span class="step-pill">3. Generate</span>
+        <span class="step-pill">4. Export .docx</span>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-state" id="loadingState" style="display:none;">
+      <div class="forge-ring"></div>
+      <div class="loading-label">Forging your assignment…</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="step-list" id="stepList">
+        <div class="step-item" id="ls1"><div class="step-circle">1</div>Analysing assignment structure</div>
+        <div class="step-item" id="ls2"><div class="step-circle">2</div>Writing cover page & overview</div>
+        <div class="step-item" id="ls3"><div class="step-circle">3</div>Generating all content parts</div>
+        <div class="step-item" id="ls4"><div class="step-circle">4</div>Building tables & analyses</div>
+        <div class="step-item" id="ls5"><div class="step-circle">5</div>Adding screenshot placeholders</div>
+        <div class="step-item" id="ls6"><div class="step-circle">6</div>Finalising submission checklist</div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="previewWrap" style="display:none;">
+      <div class="preview-bar">
+        <div class="preview-info">
+          <div class="preview-name" id="pvName">—</div>
+          <div class="preview-sub" id="pvSub">—</div>
+        </div>
+        <div class="word-count" id="wordCount"></div>
+        <button class="exp-btn exp-copy" onclick="copyText()">⎘ Copy Text</button>
+        <button class="exp-btn exp-docx" onclick="downloadDocx()">↓ Download .docx</button>
+      </div>
+      <div class="preview-scroll">
+        <div class="doc-sheet">
+          <div class="doc-header-band">
+            <span class="doc-course-badge" id="dcBadge">—</span>
+            <div class="doc-title" id="dcTitle">—</div>
+            <div class="doc-meta-row" id="dcMeta"></div>
+          </div>
+          <div class="doc-body" id="docBody"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end preview tab -->
+
+  <!-- HISTORY TAB -->
+  <div class="tab-content" id="mtab-history">
+    <div class="history-wrap">
+      <div class="history-head">
+        <h2>Assignment History</h2>
+        <span class="history-count" id="histCountBig">0 saved</span>
+      </div>
+      <div class="history-grid" id="historyGrid">
+        <div class="no-history">No assignments generated yet.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- end shell -->
+
+<!-- ═══ API KEY MODAL ═══ -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h2>API Configuration</h2>
+    <p>Enter your Anthropic API key to power assignment generation. Your key is stored locally in your browser only.</p>
+    <div class="field">
+      <label class="field-lbl">Anthropic API Key</label>
+      <input class="finput" id="apiKeyInput" type="password" placeholder="sk-ant-api03-…"/>
+    </div>
+    <div class="modal-note">
+      🔒 Your key never leaves your device. It's stored in localStorage and used only for direct API calls to Anthropic from your browser. Get a key at console.anthropic.com
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeApiModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveApiKey()">Save & Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST STACK ═══ -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let selectedType = '';
+let generatedRaw = '';
+let currentMeta = {};
+let appHistory = [];
+
+const TYPE_NAMES = {
+  T1:'Content Aggregators Research',
+  T2:'Social Media Aggregators Critique',
+  T3:'Social Media Listening Tools Critique',
+  T4:'Goals & Objectives',
+  T5:'Target Audience',
+  T6:'Content Plan & Viral Content',
+  T7:'Social Media Profiles Outreach-Ready',
+  T8:'Influencer Outreach Plan',
+  T9:'Final Project Report'
+};
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+(function init(){
+  const key = localStorage.getItem('af_apikey');
+  if(key){ updateApiStatus(true); }
+  const saved = localStorage.getItem('af_history');
+  if(saved){ try{ appHistory = JSON.parse(saved); }catch(e){} }
+  updateHistCount();
+})();
+
+// ════════════════════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════════════════════
+function switchSTab(tab, btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.field-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('stab-'+tab).classList.add('active');
+}
+
+function switchMTab(tab, btn){
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('mtab-'+tab).classList.add('active');
+  if(tab==='history') renderHistory();
+}
+
+// ════════════════════════════════════════════════════════
+// TYPE SELECTION
+// ════════════════════════════════════════════════════════
+function selectType(code, el){
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedType = code;
+  document.getElementById('selectedTypeDisplay').textContent = '▸ '+TYPE_NAMES[code];
+}
+
+// ════════════════════════════════════════════════════════
+// API KEY
+// ════════════════════════════════════════════════════════
+function openApiModal(){
+  const key = localStorage.getItem('af_apikey')||'';
+  document.getElementById('apiKeyInput').value = key;
+  document.getElementById('apiModal').classList.add('open');
+}
+function closeApiModal(){ document.getElementById('apiModal').classList.remove('open'); }
+function saveApiKey(){
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if(!key){ toast('Please enter an API key','error'); return; }
+  localStorage.setItem('af_apikey', key);
+  updateApiStatus(true);
+  closeApiModal();
+  toast('API key saved successfully','success');
+}
+function updateApiStatus(connected){
+  document.getElementById('apiDot').className = 'api-dot'+(connected?'':' off');
+  document.getElementById('apiLabel').textContent = connected?'API Connected':'Set API Key';
+}
+
+// ════════════════════════════════════════════════════════
+// FORM
+// ════════════════════════════════════════════════════════
+function getForm(){
+  return {
+    studentName: document.getElementById('studentName').value.trim(),
+    courseCode:  document.getElementById('courseCode').value,
+    assignmentNum: document.getElementById('assignmentNum').value,
+    assignmentType: selectedType,
+    businessName: document.getElementById('businessName').value.trim(),
+    businessUrl:  document.getElementById('businessUrl').value.trim(),
+    industry:    document.getElementById('industry').value.trim(),
+    instructor:  document.getElementById('instructorName').value.trim(),
+    dueDate:     document.getElementById('dueDate').value.trim(),
+    tone:        document.getElementById('tone').value,
+    extra:       document.getElementById('extraInstructions').value.trim()
+  };
+}
+
+function clearAll(){
+  ['studentName','courseCode','assignmentNum','businessName','businessUrl','industry','instructorName','dueDate','extraInstructions']
+    .forEach(id=>{ const e=document.getElementById(id); if(e)e.value=''; });
+  document.getElementById('tone').value='academic';
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
+  selectedType='';
+  document.getElementById('selectedTypeDisplay').textContent='';
+  toast('Form cleared','info');
+}
+
+// ════════════════════════════════════════════════════════
+// PROMPT BUILDER
+// ════════════════════════════════════════════════════════
+function buildPrompt(v){
+  const toneMap = {academic:'academic and formal',professional:'professional and clear',conversational:'conversational yet professional'};
+  const tone = toneMap[v.tone]||'academic and formal';
+  const biz = v.businessName||'[generate a realistic business name fitting the industry]';
+  const url = v.businessUrl||`[use a realistic placeholder URL for ${biz}]`;
+  const ind = v.industry||'[auto-select an appropriate industry]';
+
+  const structures = {
+T1:`Generate a COMPLETE, submission-ready SMALT Assignment 1: Content Aggregators Research.
+
+EXACT STRUCTURE REQUIRED:
+
+## PART 1: Content Aggregation Research
+
+**Business Selected:** ${biz}
+**Website:** ${url}
+**Industry:** ${ind}
+
+Write a 3-4 sentence business description.
+
+### What is Content Aggregation?
+Write a clear 2-3 sentence definition.
+
+### Three Benefits of Content Aggregation
+Write 3 numbered benefits, each with a 2-3 sentence explanation specific to ${biz}.
+
+### Content Analysis Questions
+Answer all 4 with Yes/No + 2-3 sentence explanation each:
+1. Is the content adding value to their audience?
+2. Do they customize the content they share?
+3. Is the content authentic and from trustworthy sources?
+4. Does the website cite or credit sources?
+
+Add a [📸 SCREENSHOT PLACEHOLDER: Screenshot of ${biz} homepage showing content aggregation in action] here.
+
+---
+
+## PART 2: Content Aggregation for My Business
+
+**Business:** ${biz}
+**Website:** ${url}
+
+### How Content Aggregation Can Help ${biz}
+Write 6 bullet points, each a full sentence explaining a specific benefit.
+
+Add a [📸 SCREENSHOT PLACEHOLDER: Screenshot of a content aggregation tool dashboard being used for ${biz}] here.
+
+---
+
+## SUBMISSION CHECKLIST
+
+Create a table with columns: Item | Requirement | Completed
+Include 8 checklist rows covering all assignment requirements.`,
+
+T2:`Generate a COMPLETE, submission-ready SMALT Assignment 2: Social Media Aggregators Critique.
+
+Compare these 3 platforms: Juicer.io, Taggbox, Curator.io for ${biz} (${ind}).
+
+EXACT STRUCTURE:
+
+## Introduction
+Write 2-3 sentences about why social media aggregators matter for businesses.
+
+---
+
+## Evaluation Matrix
+
+Create a table with columns: Criteria | Juicer.io | Taggbox | Curator.io | Notes
+Include these 10 criteria rows: Ease of Use, Customization Options, Platform Integrations, Pricing Value, Analytics & Reporting, Customer Support, Free Plan Quality, Setup Speed, Design Options, Overall Score (1-10)
+
+---
+
+## Platform Analysis
+
+### Juicer.io
+**Website:** https://www.juicer.io
+Write 2-3 sentences on Functions.
+**Key Features:** (5 bullet points)
+Write 2-3 sentences on User Interface.
+**Cost:** [free plan details + Pro/Business pricing]
+Create a Pros | Cons table (3 rows each).
+**Ideal For:** [1 sentence]
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Juicer.io dashboard/interface]
+
+### Taggbox
+**Website:** https://taggbox.com
+[same structure as above]
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Taggbox dashboard/interface]
+
+### Curator.io
+**Website:** https://curator.io
+[same structure as above]
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Curator.io dashboard/interface]
+
+---
+
+## Overall Comparison Summary
+
+Create a table: Feature | Juicer.io | Taggbox | Curator.io
+Include 8 feature rows.
+
+---
+
+## Recommendation
+
+Write 2-3 paragraphs recommending the best platform for ${biz}, with specific reasons.
+
+---
+
+## SUBMISSION CHECKLIST
+
+Table: Item | Requirement | Completed (8 rows)`,
+
+T3:`Generate a COMPLETE, submission-ready SMALT Assignment 3: Social Media Listening Tools Critique.
+
+Compare: Brand24, Talkwalker, Awario for ${biz} (${ind}).
+
+EXACT STRUCTURE:
+
+## Introduction
+2-3 sentences on the importance of social listening for brands.
+
+---
+
+## Key Social Listening Metrics
+
+Table: Metric | Why It Matters | How Each Tool Tracks It
+Include: Brand Mentions, Sentiment Analysis, Reach & Impressions, Share of Voice, Hashtag Performance, Competitor Analysis, Influencer Identification, Crisis Detection
+
+---
+
+## Evaluation Matrix
+
+Table: Criteria | Brand24 | Talkwalker | Awario | Notes
+10 criteria: Data Sources, Sentiment Analysis Quality, Real-time Monitoring, AI Features, Historical Data, Reporting, Pricing, Ease of Use, Alert System, Overall Score (1-10)
+
+---
+
+## Platform Analysis
+
+### Brand24
+**Website:** https://brand24.com
+Functions (2-3 sentences), Key Features (5 bullets), UI (2 sentences), Cost, AI Features, Data Sources, Pros/Cons table, Ideal For
+[📸 SCREENSHOT PLACEHOLDER: Brand24 dashboard showing mention monitoring]
+
+### Talkwalker
+**Website:** https://www.talkwalker.com
+[same structure]
+[📸 SCREENSHOT PLACEHOLDER: Talkwalker analytics dashboard]
+
+### Awario
+**Website:** https://awario.com
+[same structure]
+[📸 SCREENSHOT PLACEHOLDER: Awario mentions feed]
+
+---
+
+## Overall Comparison Summary
+Feature comparison table (8 rows)
+
+## Recommendation
+2-3 paragraphs for ${biz}
+
+## SUBMISSION CHECKLIST
+Table (8 rows)`,
+
+T4:`Generate a COMPLETE CA-CNTOR Assignment 1 Part 1: Goals & Objectives for ${biz}.
+
+EXACT STRUCTURE:
+
+## Business Overview
+
+Create a table: Field | Details
+Rows: Business Name | ${biz}, Industry | ${ind}, Website | ${url}, Mission Statement | [write compelling mission], Founded | [plausible year], Target Market | [brief description]
+
+---
+
+## SMART Goals
+
+Write 3 SMART goals. For EACH goal, create a table:
+
+| Component | Details |
+|-----------|---------|
+| Specific | [what exactly will be achieved] |
+| Measurable | [how it will be measured with specific numbers] |
+| Achievable | [why it is realistic for ${biz}] |
+| Relevant | [how it connects to business objectives] |
+| Time-bound | [exact deadline] |
+| **Objective** | [1-sentence action statement] |
+
+Goals should cover: social media growth, engagement, and content reach.
+
+---
+
+## SUBMISSION CHECKLIST
+Table: Item | Requirement | Completed (6 rows)`,
+
+T5:`Generate a COMPLETE CA-CNTOR Assignment 1 Part 2: Target Audience for ${biz} (${ind}).
+
+EXACT STRUCTURE:
+
+## Target Audience Identification
+
+### Demographics
+Table: Characteristic | Description | Rationale
+Rows: Age Range, Gender Split, Location/Geography, Education Level, Income Range, Occupation/Job Title, Relationship Status, Family Status
+
+### Psychographics
+Table: Characteristic | Description | How It Influences Content
+Rows: Core Values, Key Interests, Lifestyle Habits, Pain Points, Motivations/Goals, Online Behaviour, Brand Preferences, Purchase Drivers
+
+---
+
+## Audience Content Tastes & Preferences
+
+### What They Want to See
+Table: Content Type | Preference Level (High/Med/Low) | Why They Engage | Best Platform
+Include 8 content types relevant to ${ind}.
+
+### Content Formats That Resonate
+Table: Format | Preference | Why It Works | How ${biz} Should Use It
+Include: Short-form Video, Long-form Video, Carousel Posts, Infographics, Stories/Reels, Blog Articles, Podcasts, Live Streams
+
+---
+
+## Social Media Platform Analysis
+
+### Platforms Used by Target Audience
+Table: Platform | User Base Match | Usage Frequency | Content Type | Priority (High/Med/Low)
+
+### Recommended Platforms for ${biz}
+Table: Platform | Strategy | Content Focus | Posting Frequency | KPI
+
+---
+
+## SUBMISSION CHECKLIST
+Table (8 rows)`,
+
+T6:`Generate a COMPLETE CA-CNTOR Assignment 1 Part 3: Content Plan & Viral Content for ${biz} (${ind}).
+
+EXACT STRUCTURE:
+
+## Content Topic Ideas
+Write 8 numbered content ideas, each with a platform and format note.
+
+---
+
+## Three Viral Content Ideas
+
+For EACH of the 3 ideas, write:
+**Concept:** 2-3 sentences describing the viral idea
+**Format:** 30-45 second TikTok/Reel
+**Hook:** "Exact hook quote that stops the scroll"
+**Call to Action:** "Exact CTA text"
+**Why It Will Go Viral:** 2 sentences
+
+---
+
+## Channels for Viral Distribution
+Table: Channel | Why It Fits ${biz} | Expected Reach | Strategy
+3 channels
+
+## Tips for Viral Organic Reach
+Table: Tip | How to Apply for ${biz} | Expected Impact
+3 tips
+
+---
+
+## One-Month Content Plan
+
+Create 4 weekly tables. Each table has 7 rows (Mon-Sun):
+Table columns: Day | Platform | Content Type | Topic | Caption Snippet | Hashtags | Best Time
+
+Week 1: [Foundation & Brand Awareness]
+Week 2: [Engagement & Community]
+Week 3: [Value & Education]
+Week 4: [Viral Push & CTA]
+
+---
+
+## Viral Content Scene Breakdowns
+
+For each viral idea write a detailed scene description:
+- 0–3 sec: [Hook visual description]
+- 3–10 sec: [Main content]
+- 10–25 sec: [Core value/entertainment]
+- 25–30 sec: [CTA]
+- Music/Sound: [suggestion]
+- Text Overlays: [copy]
+
+[📸 SCREENSHOT PLACEHOLDER: Mood board / visual reference for Viral Idea 1]
+[📸 SCREENSHOT PLACEHOLDER: Mood board / visual reference for Viral Idea 2]
+[📸 SCREENSHOT PLACEHOLDER: Mood board / visual reference for Viral Idea 3]
+
+---
+
+## SUBMISSION CHECKLIST
+Table (10 rows)`,
+
+T7:`Generate a COMPLETE CA-CNTOR Assignment 2: Social Media Profiles Outreach-Ready for ${biz}.
+
+EXACT STRUCTURE:
+
+## Business Overview
+Table: Field | Details (same as T4 format)
+
+---
+
+## Platform Profiles
+
+For EACH of 4 platforms (Instagram, LinkedIn, TikTok, Facebook):
+
+### [Platform Name]
+Table: Element | Details
+Rows: Platform | [name], Handle | @[suggestion], Profile URL | [full URL suggestion], Profile Photo | [description of what image to use], Bio (exact text) | [write the exact bio ready to copy-paste], Link in Bio | [strategy]
+
+[📸 SCREENSHOT PLACEHOLDER: ${biz} [Platform] profile screenshot after optimisation]
+
+---
+
+## Profile Photo Specifications
+Table: Platform | Recommended Size | Format | Key Requirement | Notes
+All 4 platforms
+
+## Brand Voice & Personality
+Table: Dimension | Description | Example Phrase | What to Avoid
+Rows: Tone, Language Style, Emoji Usage, Hashtag Strategy, Response Style
+
+## Cross-Platform Consistency Checklist
+Table: Element | Standard for ${biz} | Why It Matters | Status
+8 elements
+
+## SUBMISSION CHECKLIST
+Table (10 rows)`,
+
+T8:`Generate a COMPLETE CA-CNTOR Assignment 3: Influencer Outreach for ${biz} (${ind}).
+
+EXACT STRUCTURE:
+
+## Type of Influencers & Why
+Write 2 paragraphs explaining which influencer tier (nano/micro/macro) is best for ${biz} and why, including the recommended outreach platform.
+
+---
+
+## Three Influencers
+
+Table: Name | Niche | Platform | Followers | Avg Engagement Rate | Why They Fit ${biz} | Handle | Content Style | Contact Method
+Create 3 realistic fictional influencers appropriate for ${ind}.
+
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Influencer 1's profile/recent posts]
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Influencer 2's profile/recent posts]
+[📸 SCREENSHOT PLACEHOLDER: Screenshot of Influencer 3's profile/recent posts]
+
+---
+
+## Influencer Outreach Proposal
+
+### What ${biz} Can Offer
+Table: Offering | Details | Value to Influencer
+6 offerings
+
+### Collaboration Opportunities
+Table: Opportunity | Format | Duration | Deliverables | Compensation
+4 opportunities
+
+---
+
+## Outreach Message Example
+**Platform:** [chosen platform]
+**Subject/Opening Line:** [exact text]
+
+**Full Message:**
+[Write a complete, ready-to-send outreach message ~150-180 words, personalised and professional]
+
+---
+
+## Measurement Strategy
+Table: KPI | Target | Measurement Tool | Reporting Frequency
+6 KPIs
+
+## Three Social Media Groups Joined
+Table: Group Name | Platform | Approx Members | Relevance to ${biz} | Link | Strategy
+3 groups
+
+## SUBMISSION CHECKLIST
+Table (10 rows)`,
+
+T9:`Generate a COMPLETE CA-CNTOR Assignment 4: Final Project Report for ${biz} (${ind}).
+
+This is the comprehensive final report. Every section must be thorough and professionally written.
+
+EXACT STRUCTURE:
+
+## 1. Business Overview
+Table: Field | Details (business name, industry, website, mission, founded, target market, social media goals)
+
+## 2. Strategic Approach
+Write 2 substantial paragraphs on the overall content outreach strategy for ${biz}.
+Then list 3 Content Pillars as a table: Pillar | Description | Content Examples | Platforms
+
+## 3. SMART Goals
+2 goals, each in table format (Specific/Measurable/Achievable/Relevant/Time-bound/Objective)
+
+## 4. Outreach-Ready Social Media Profiles
+Table: Platform | Handle | Bio Snippet | Profile Status | Key Feature
+All 4 platforms + link to optimisation notes
+
+[📸 SCREENSHOT PLACEHOLDER: All 4 social media profile screenshots]
+
+## 5. Target Audience
+Demographics table (8 rows) + Psychographics table (8 rows) + Content Preferences table (6 rows)
+
+## 6. Content Platforms
+Table: Platform | Audience Match | Content Type | Frequency | Key Metric | Priority
+
+## 7. Influencer Strategy
+1 paragraph on influencer type rationale.
+3 influencers table (Name | Niche | Platform | Followers | Why They Fit | Handle)
+
+## 8. Content Topic Ideas
+Numbered list of 9 ideas with platform and format notes
+
+## 9. One-Month Content Plan
+4 weekly tables: Day | Platform | Content Type | Topic | Hashtags | Best Time
+
+## 10. Three Viral Content Ideas
+Each: Concept, Format, Hook (quote), CTA (quote), Expected Reach
+
+## 11. Three Content Engagement Tactics
+Table: Tactic | How to Implement | Platform | Expected Outcome | Timeline
+3 tactics
+
+## 12. Measurement & Metrics
+Table: Metric | Definition | Target | Tool | Reporting Frequency
+8 metrics
+
+## 13. Presentation Slides Outline
+Table: Slide # | Title | Key Points (3 bullets) | Visual Suggestion
+10 slides
+
+## SUBMISSION CHECKLIST
+Table: Item | Requirement | Status (14 rows covering all sections)`
+  };
+
+  const structure = structures[v.assignmentType]||'Generate a comprehensive academic assignment with all required sections, tables, and a submission checklist.';
+
+  return `You are an expert academic writer specialising in social media marketing courses. Write a COMPLETE, submission-ready assignment document.
+
+STUDENT: ${v.studentName||'[Student Name]'}
+COURSE: ${v.courseCode||'SMALT'}
+ASSIGNMENT NUMBER: ${v.assignmentNum||'1'}
+INSTRUCTOR: ${v.instructor||'[Instructor Name]'}
+DUE DATE: ${v.dueDate||'Session 2'}
+BUSINESS: ${biz}
+WEBSITE: ${url}
+INDUSTRY: ${ind}
+WRITING TONE: ${tone}
+${v.extra?`ADDITIONAL REQUIREMENTS: ${v.extra}`:''}
+
+ASSIGNMENT STRUCTURE TO FOLLOW EXACTLY:
+${structure}
+
+CRITICAL RULES:
+1. Write EVERY section completely — no "[write content here]" placeholders
+2. Use markdown: # H1, ## H2, ### H3, #### H4
+3. Use pipe tables with header rows for ALL tables
+4. Use [📸 SCREENSHOT PLACEHOLDER: clear description of what screenshot goes here] for every image slot
+5. Make all content specific, realistic, and coherent with ${biz} and ${ind}
+6. Professional ${tone} English throughout
+7. Every table must have proper header row
+8. Start directly with the first section — no preamble
+
+BEGIN THE ASSIGNMENT NOW:`;
+}
+
+// ════════════════════════════════════════════════════════
+// GENERATE
+// ════════════════════════════════════════════════════════
+async function generateAssignment(){
+  const v = getForm();
+
+  if(!v.studentName){ toast('Student name is required','error'); return; }
+  if(!v.courseCode){ toast('Please select a course code','error'); return; }
+  if(!v.assignmentType){ toast('Please select an assignment type (Type tab)','error'); return; }
+
+  const apiKey = localStorage.getItem('af_apikey');
+  if(!apiKey){ openApiModal(); toast('Enter your API key first','error'); return; }
+
+  currentMeta = v;
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  document.getElementById('spinRing').style.display = 'block';
+  document.getElementById('genIcon').style.display = 'none';
+  document.getElementById('genLabel').textContent = 'FORGING…';
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'flex';
+
+  // Animate steps
+  const steps = ['ls1','ls2','ls3','ls4','ls5','ls6'];
+  let si = 0;
+  steps.forEach(s=>{ const el=document.getElementById(s); el.className='step-item'; el.querySelector('.step-circle').textContent=s.replace('ls',''); });
+
+  const stepTimer = setInterval(()=>{
+    if(si>0){
+      const prev = document.getElementById(steps[si-1]);
+      prev.className='step-item done';
+      prev.querySelector('.step-circle').textContent='✓';
+    }
+    if(si<steps.length){
+      document.getElementById(steps[si]).className='step-item active';
+      document.getElementById('progressFill').style.width = ((si+1)/steps.length*100)+'%';
+      si++;
+    } else clearInterval(stepTimer);
+  }, 1600);
+
+  try{
+    const prompt = buildPrompt(v);
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:8000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    clearInterval(stepTimer);
+    steps.forEach(s=>{
+      document.getElementById(s).className='step-item done';
+      document.getElementById(s).querySelector('.step-circle').textContent='✓';
+    });
+    document.getElementById('progressFill').style.width='100%';
+
+    if(!resp.ok){
+      const err = await resp.json();
+      throw new Error(err.error?.message||'API error '+resp.status);
+    }
+
+    const data = await resp.json();
+    const text = data.content.map(c=>c.text||'').join('');
+    generatedRaw = text;
+
+    await delay(500);
+
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('previewWrap').style.display='flex';
+
+    renderPreview(text, v);
+    saveHistory(v, text);
+    updateHistCount();
+
+    btn.disabled=false;
+    document.getElementById('spinRing').style.display='none';
+    document.getElementById('genIcon').style.display='block';
+    document.getElementById('genLabel').textContent='GENERATE ASSIGNMENT';
+
+    toast('Assignment generated successfully!','success');
+
+  } catch(err){
+    clearInterval(stepTimer);
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('emptyState').style.display='flex';
+
+    btn.disabled=false;
+    document.getElementById('spinRing').style.display='none';
+    document.getElementById('genIcon').style.display='block';
+    document.getElementById('genLabel').textContent='GENERATE ASSIGNMENT';
+
+    toast('Error: '+err.message,'error');
+  }
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ════════════════════════════════════════════════════════
+// RENDER PREVIEW
+// ════════════════════════════════════════════════════════
+function renderPreview(text, v){
+  const typeName = TYPE_NAMES[v.assignmentType]||v.assignmentType;
+
+  // Top bar
+  document.getElementById('pvName').textContent = `${v.studentName} · ${typeName}`;
+  document.getElementById('pvSub').textContent = `${v.courseCode} · Assignment ${v.assignmentNum} · ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
+
+  // Word count
+  const wc = text.split(/\s+/).filter(w=>w).length;
+  document.getElementById('wordCount').textContent = wc.toLocaleString()+' words';
+
+  // Header band
+  document.getElementById('dcBadge').textContent = `${v.courseCode} · Assignment ${v.assignmentNum}`;
+  document.getElementById('dcTitle').textContent = typeName;
+  document.getElementById('dcMeta').innerHTML = `
+    <div class="doc-meta-item"><label>Student</label><span>${v.studentName||'—'}</span></div>
+    <div class="doc-meta-item"><label>Business</label><span>${v.businessName||'—'}</span></div>
+    <div class="doc-meta-item"><label>Due</label><span>${v.dueDate||'Session 2'}</span></div>
+    <div class="doc-meta-item"><label>Instructor</label><span>${v.instructor||'—'}</span></div>
+  `;
+
+  // Render body
+  const body = document.getElementById('docBody');
+  body.innerHTML = convertMarkdown(text);
+}
+
+function convertMarkdown(text){
+  const lines = text.split('\n');
+  let html = '';
+  let tableLines = [];
+  let inTable = false;
+  let inUL = false;
+  let inOL = false;
+
+  const flushLists = () => {
+    if(inUL){ html+='</ul>'; inUL=false; }
+    if(inOL){ html+='</ol>'; inOL=false; }
+  };
+
+  const flushTable = () => {
+    if(!tableLines.length) return;
+    const rows = tableLines.filter(l=>!/^\|[\s|:-]+\|$/.test(l.trim()));
+    if(rows.length < 2){ tableLines=[]; return; }
+    const parseRow = r => r.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(c=>c.trim());
+    const heads = parseRow(rows[0]);
+    const data = rows.slice(1);
+    let tbl = '<div class="tbl-wrap"><table><thead><tr>';
+    heads.forEach(h=>{ tbl+=`<th>${h}</th>`; });
+    tbl+='</tr></thead><tbody>';
+    data.forEach(r=>{
+      const cells = parseRow(r);
+      if(!cells.length) return;
+      tbl+='<tr>';
+      heads.forEach((_,i)=>{ tbl+=`<td>${cells[i]||''}</td>`; });
+      tbl+='</tr>';
+    });
+    tbl+='</tbody></table></div>';
+    html+=tbl;
+    tableLines=[];
+  };
+
+  for(let i=0;i<lines.length;i++){
+    const raw = lines[i];
+    const line = raw.trim();
+
+    // Screenshot
+    if(line.includes('📸') || /\[screenshot placeholder/i.test(line)){
+      flushLists();
+      if(inTable){ flushTable(); inTable=false; }
+      const desc = line.replace(/\[?📸\s*SCREENSHOT PLACEHOLDER:?\]?/gi,'').replace(/[\[\]]/g,'').trim()||'Insert screenshot here';
+      html+=`<div class="ss-note"><div class="ss-icon">📸</div><div class="ss-text"><strong>Screenshot Required</strong><span>${desc}</span></div></div>`;
+      continue;
+    }
+
+    // Table
+    if(line.startsWith('|')){
+      flushLists();
+      inTable=true;
+      tableLines.push(line);
+      continue;
+    }
+    if(inTable){
+      flushTable();
+      inTable=false;
+    }
+
+    if(!line){
+      flushLists();
+      html+='';
+      continue;
+    }
+
+    if(line.startsWith('# ')){
+      flushLists();
+      html+=`<h1>${esc(line.slice(2))}</h1>`;
+      continue;
+    }
+    if(line.startsWith('## ')){
+      flushLists();
+      html+=`<h2>${esc(line.slice(3))}</h2>`;
+      continue;
+    }
+    if(line.startsWith('### ')){
+      flushLists();
+      html+=`<h3>${esc(line.slice(4))}</h3>`;
+      continue;
+    }
+    if(line.startsWith('#### ')){
+      flushLists();
+      html+=`<h4>${esc(line.slice(5))}</h4>`;
+      continue;
+    }
+
+    if(line.match(/^[-*•]\s/)){
+      if(!inUL){ if(inOL){html+='</ol>';inOL=false;} html+='<ul>'; inUL=true; }
+      html+=`<li>${fmtInline(line.slice(2))}</li>`;
+      continue;
+    }
+    if(line.match(/^\d+[.)]\s/)){
+      if(!inOL){ if(inUL){html+='</ul>';inUL=false;} html+='<ol>'; inOL=true; }
+      html+=`<li>${fmtInline(line.replace(/^\d+[.)]\s/,''))}</li>`;
+      continue;
+    }
+
+    flushLists();
+    if(line.startsWith('---') || line.startsWith('===')){ html+='<hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">'; continue; }
+
+    html+=`<p>${fmtInline(line)}</p>`;
+  }
+
+  flushLists();
+  if(inTable) flushTable();
+  return html;
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmtInline(s){
+  return s
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code style="font-family:\'JetBrains Mono\',monospace;font-size:11px;background:var(--surface);padding:1px 5px;border-radius:3px;border:1px solid var(--border);">$1</code>');
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════════════════════
+function copyText(){
+  if(!generatedRaw){ toast('Generate an assignment first','error'); return; }
+  navigator.clipboard.writeText(generatedRaw).then(()=>toast('Copied to clipboard','success'));
+}
+
+async function downloadDocx(){
+  if(!generatedRaw){ toast('Generate an assignment first','error'); return; }
+  const v = currentMeta;
+  const typeName = TYPE_NAMES[v.assignmentType]||v.assignmentType;
+  const filename = `${(v.studentName||'Student').replace(/\s+/g,'_')}_${v.courseCode||'SMALT'}_A${v.assignmentNum||'1'}.docx`;
+
+  toast('Preparing Word document…','info');
+
+  try{
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel,
+            Table, TableRow, TableCell, WidthType, BorderStyle,
+            AlignmentType, PageNumber, Header, Footer,
+            ShadingType } = docx;
+
+    const children = [];
+    const GOLD = 'B8860B';
+    const INK = '0A0908';
+    const GRAY = '6B6158';
+    const SURFACE = 'F5F0E8';
+
+    // ─── Cover Page ───
+    children.push(new Paragraph({
+      children:[new TextRun({text:v.courseCode||'',size:20,color:GOLD,font:'Courier New',bold:true})],
+      alignment:AlignmentType.CENTER,spacing:{before:1440,after:160}
+    }));
+    children.push(new Paragraph({
+      children:[new TextRun({text:typeName,size:48,color:INK,font:'Georgia',bold:true})],
+      alignment:AlignmentType.CENTER,spacing:{after:480}
+    }));
+
+    const metaLines = [
+      ['Student',v.studentName||'—'],['Course',v.courseCode||'—'],
+      ['Assignment',`Assignment ${v.assignmentNum||'1'}`],
+      ['Business',v.businessName||'—'],
+      ['Instructor',v.instructor||'—'],['Due Date',v.dueDate||'Session 2'],
+      ['Date',new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})]
+    ];
+    metaLines.forEach(([k,val])=>{
+      children.push(new Paragraph({
+        children:[
+          new TextRun({text:k+': ',size:20,color:GRAY,font:'Calibri',bold:true}),
+          new TextRun({text:val,size:20,color:INK,font:'Calibri'})
+        ],
+        alignment:AlignmentType.CENTER,spacing:{after:80}
+      }));
+    });
+
+    children.push(new Paragraph({children:[new TextRun({text:'',size:24})],spacing:{before:2880}}));
+
+    // ─── Parse content ───
+    const lines = generatedRaw.split('\n');
+    let tableAccum = [];
+    let inTbl = false;
+
+    const flushDocTable = () => {
+      const validRows = tableAccum.filter(l=>l.trim().startsWith('|') && !/^\|[\s|:-]+\|$/.test(l.trim()));
+      if(validRows.length < 2){ tableAccum=[]; return; }
+      const parseRow = r=>r.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(c=>c.trim());
+      const heads = parseRow(validRows[0]);
+      const drows = validRows.slice(1);
+      const cw = Math.floor(8640/Math.max(heads.length,1));
+
+      try{
+        const headerRow = new TableRow({
+          children: heads.map(h=>new TableCell({
+            children:[new Paragraph({children:[new TextRun({text:h,bold:true,color:'FFFFFF',size:16,font:'Calibri'})],alignment:AlignmentType.LEFT})],
+            shading:{fill:INK,type:ShadingType.CLEAR,color:'auto'},
+            width:{size:cw,type:WidthType.DXA},
+            margins:{top:80,bottom:80,left:120,right:120}
+          }))
+        });
+
+        const dataRows = drows.map((r,ri)=>{
+          const cells = parseRow(r);
+          return new TableRow({
+            children: heads.map((_,ci)=>new TableCell({
+              children:[new Paragraph({children:[new TextRun({text:cells[ci]||'',size:18,font:'Calibri'})],spacing:{after:40}})],
+              shading:{fill:ri%2===0?'FFFFFF':'F5F0E8',type:ShadingType.CLEAR,color:'auto'},
+              width:{size:cw,type:WidthType.DXA},
+              margins:{top:60,bottom:60,left:120,right:120}
+            }))
+          });
+        });
+
+        children.push(new Table({
+          rows:[headerRow,...dataRows],
+          width:{size:8640,type:WidthType.DXA}
+        }));
+        children.push(new Paragraph({children:[new TextRun({text:'',size:16})],spacing:{after:120}}));
+      }catch(e){ console.warn('Table error',e); }
+      tableAccum=[];
+    };
+
+    for(const rawLine of lines){
+      const line = rawLine.trim();
+
+      if(line.startsWith('|')){
+        inTbl=true; tableAccum.push(line); continue;
+      }
+      if(inTbl){ flushDocTable(); inTbl=false; }
+
+      if(!line){
+        children.push(new Paragraph({children:[new TextRun({text:'',size:20})],spacing:{after:60}}));
+        continue;
+      }
+
+      if(line.includes('📸')||/screenshot placeholder/i.test(line)){
+        const note = line.replace(/\[?📸\s*SCREENSHOT PLACEHOLDER:?\]?/gi,'').replace(/[\[\]]/g,'').trim()||'Insert screenshot here';
+        children.push(new Paragraph({
+          children:[new TextRun({text:'[ 📸  SCREENSHOT REQUIRED: '+note+' ]',italics:true,color:GOLD,size:18,font:'Courier New'})],
+          spacing:{before:160,after:160},
+          border:{
+            top:{style:BorderStyle.DASHED,size:4,color:GOLD},
+            bottom:{style:BorderStyle.DASHED,size:4,color:GOLD},
+            left:{style:BorderStyle.DASHED,size:4,color:GOLD},
+            right:{style:BorderStyle.DASHED,size:4,color:GOLD}
+          },
+          indent:{left:240,right:240}
+        }));
+        continue;
+      }
+
+      if(line.startsWith('# ')){
+        children.push(new Paragraph({
+          children:[new TextRun({text:line.slice(2).replace(/\*\*/g,''),bold:true,size:36,color:GOLD,font:'Georgia'})],
+          spacing:{before:480,after:200},
+          border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'E0D9CC'}}
+        }));
+        continue;
+      }
+      if(line.startsWith('## ')){
+        children.push(new Paragraph({
+          children:[new TextRun({text:line.slice(3).replace(/\*\*/g,''),bold:true,size:26,color:INK,font:'Calibri'})],
+          spacing:{before:320,after:140}
+        }));
+        continue;
+      }
+      if(line.startsWith('### ')){
+        children.push(new Paragraph({
+          children:[new TextRun({text:line.slice(4).replace(/\*\*/g,'').toUpperCase(),bold:true,size:18,color:GOLD,font:'Courier New'})],
+          spacing:{before:240,after:80}
+        }));
+        continue;
+      }
+      if(line.startsWith('#### ')){
+        children.push(new Paragraph({
+          children:[new TextRun({text:line.slice(5).replace(/\*\*/g,''),bold:true,size:22,color:INK,font:'Calibri'})],
+          spacing:{before:180,after:60}
+        }));
+        continue;
+      }
+
+      if(line.match(/^[-*•]\s/)){
+        const t = line.slice(2).replace(/\*\*(.+?)\*\*/g,'$1');
+        children.push(new Paragraph({
+          children:[new TextRun({text:t,size:20,font:'Calibri'})],
+          bullet:{level:0},spacing:{after:60}
+        }));
+        continue;
+      }
+      if(line.match(/^\d+[.)]\s/)){
+        const t = line.replace(/^\d+[.)]\s/,'').replace(/\*\*(.+?)\*\*/g,'$1');
+        children.push(new Paragraph({
+          children:[new TextRun({text:t,size:20,font:'Calibri'})],
+          numbering:{reference:'af-numbering',level:0},spacing:{after:60}
+        }));
+        continue;
+      }
+
+      if(/^-{3,}$/.test(line)||/^={3,}$/.test(line)) continue;
+
+      const plain = line.replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').replace(/`(.+?)`/g,'$1');
+      const isBold = line.startsWith('**')&&line.endsWith('**');
+      children.push(new Paragraph({
+        children:[new TextRun({text:plain,size:20,font:'Calibri',bold:isBold})],
+        spacing:{after:80}
+      }));
+    }
+
+    if(inTbl) flushDocTable();
+
+    const headerStr = `${v.studentName||'Student'}  |  ${v.courseCode||'Course'}  |  Assignment ${v.assignmentNum||'1'}`;
+    const doc = new Document({
+      numbering:{
+        config:[{
+          reference:'af-numbering',
+          levels:[{level:0,format:'decimal',text:'%1.',alignment:AlignmentType.LEFT,
+            style:{paragraph:{indent:{left:360,hanging:260}}}}]
+        }]
+      },
+      sections:[{
+        properties:{
+          page:{
+            margin:{top:1080,bottom:1080,left:1080,right:1080},
+            size:{width:12240,height:15840}
+          }
+        },
+        headers:{
+          default: new Header({children:[
+            new Paragraph({
+              children:[
+                new TextRun({text:headerStr,size:16,color:'9C9088',font:'Calibri'}),
+              ],
+              alignment:AlignmentType.RIGHT,
+              border:{bottom:{style:BorderStyle.SINGLE,size:4,color:'D4A017'}}
+            })
+          ]})
+        },
+        footers:{
+          default: new Footer({children:[
+            new Paragraph({
+              children:[
+                new TextRun({text:'AssignmentForge  ·  ',size:16,color:'D4A017',font:'Calibri'}),
+                new TextRun({text:'Page ',size:16,color:'9C9088',font:'Calibri'}),
+                new TextRun({children:[PageNumber.CURRENT],size:16,color:'9C9088',font:'Calibri'}),
+                new TextRun({text:' of ',size:16,color:'9C9088',font:'Calibri'}),
+                new TextRun({children:[PageNumber.TOTAL_PAGES],size:16,color:'9C9088',font:'Calibri'}),
+              ],
+              alignment:AlignmentType.CENTER
+            })
+          ]})
+        },
+        children
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url2 = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url2; a.download=filename; a.click();
+    URL.revokeObjectURL(url2);
+    toast('Downloaded: '+filename,'success');
+
+  } catch(err){
+    toast('DOCX error: '+err.message,'error');
+    console.error(err);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// HISTORY
+// ════════════════════════════════════════════════════════
+function saveHistory(v, text){
+  const entry = {
+    id: Date.now(),
+    studentName:v.studentName,
+    courseCode:v.courseCode,
+    assignmentNum:v.assignmentNum,
+    assignmentType:v.assignmentType,
+    businessName:v.businessName,
+    date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    text, meta:v
+  };
+  appHistory.unshift(entry);
+  if(appHistory.length>15) appHistory=appHistory.slice(0,15);
+  try{ localStorage.setItem('af_history',JSON.stringify(appHistory)); }catch(e){}
+  updateHistCount();
+}
+
+function updateHistCount(){
+  const n = appHistory.length;
+  document.getElementById('histCount').textContent = n;
+  document.getElementById('histCountBig').textContent = n+' saved';
+}
+
+function renderHistory(){
+  const grid = document.getElementById('historyGrid');
+  if(!appHistory.length){
+    grid.innerHTML='<div class="no-history">No assignments generated yet.<br>Generate one and it will appear here.</div>';
+    return;
+  }
+  grid.innerHTML = appHistory.map(h=>`
+    <div class="history-card" onclick="loadHistory(${h.id})">
+      <span class="hc-badge">${h.courseCode} · A${h.assignmentNum}</span>
+      <div class="hc-name">${h.studentName||'—'}</div>
+      <div class="hc-type">${TYPE_NAMES[h.assignmentType]||h.assignmentType}</div>
+      <div class="hc-foot">
+        <span>${h.businessName||'No business'}</span>
+        <span>${h.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadHistory(id){
+  const entry = appHistory.find(h=>h.id===id);
+  if(!entry) return;
+  generatedRaw = entry.text;
+  currentMeta = entry.meta;
+  switchMTab('preview', document.querySelector('.mtab'));
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('previewWrap').style.display='flex';
+  renderPreview(entry.text, entry.meta);
+  toast('Assignment loaded from history','info');
+}
+
+// ════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════
+function toast(msg, type='info'){
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<div class="toast-dot"></div>${msg}`;
+  stack.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+// ════════════════════════════════════════════════════════
+// MISC
+// ════════════════════════════════════════════════════════
+document.getElementById('apiModal').addEventListener('click',function(e){
+  if(e.target===this) closeApiModal();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeApiModal();
+});
+</script>
+</body>
+</html>

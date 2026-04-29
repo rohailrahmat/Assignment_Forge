@@ -1,8 +1,7 @@
 import axios from 'axios'
 
 const DEFAULT_TIMEOUT_MS = 180000
-const FALLBACK_API_BASE_URL = 'http://localhost:8000'
-
+const FALLBACK_API_BASE_URL = '/api'
 const baseURL = (import.meta.env.VITE_API_BASE_URL || FALLBACK_API_BASE_URL).replace(/\/+$/, '')
 
 export const apiClient = axios.create({

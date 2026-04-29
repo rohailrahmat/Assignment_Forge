@@ -469,7 +469,8 @@ class AssignmentGenerator:
         # Detect Provider
         is_groq = self.api_key.startswith("gsk_")
         base_url = "https://api.groq.com/openai/v1" if is_groq else None
-        model = "llama-3.3-70b-versatile" if is_groq else "gpt-4o"
+        # Use llama3-70b-8192 as it's the most stable/available Groq model
+        model = "llama3-70b-8192" if is_groq else "gpt-4o"
 
         try:
             client = AsyncOpenAI(api_key=self.api_key, base_url=base_url)

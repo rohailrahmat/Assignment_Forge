@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import axios from 'axios'
 
-const API = 'http://localhost:8000'
+const API = '/api'
 
 export default function HistoryView({ setView, setGenerated }) {
   const [history, setHistory] = useState([])

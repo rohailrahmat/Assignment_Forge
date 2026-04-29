@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -58,17 +58,20 @@ class GenerateResponse(BaseModel):
     status: str
 
 
-@app.get("/")
+# Create a router for all API endpoints
+api_router = APIRouter(prefix="/api")
+
+@api_router.get("/")
 def root():
     return {"message": "AssignmentForge API is running", "version": "1.0.0"}
 
 
-@app.get("/health")
+@api_router.get("/health")
 def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
 
-@app.get("/assignment-types")
+@api_router.get("/assignment-types")
 def get_assignment_types():
     return {
         "types": [
@@ -86,7 +89,7 @@ def get_assignment_types():
     }
 
 
-@app.post("/generate", response_model=GenerateResponse)
+@api_router.post("/generate", response_model=GenerateResponse)
 async def generate_assignment(req: GenerateRequest):
     assignment_id = str(uuid.uuid4())
 
@@ -125,7 +128,7 @@ async def generate_assignment(req: GenerateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/download/docx/{assignment_id}")
+@api_router.get("/download/docx/{assignment_id}")
 def download_docx(assignment_id: str):
     assignment = get_assignment_by_id(assignment_id)
     if not assignment:
@@ -142,7 +145,7 @@ def download_docx(assignment_id: str):
     )
 
 
-@app.get("/download/pdf/{assignment_id}")
+@api_router.get("/download/pdf/{assignment_id}")
 def download_pdf(assignment_id: str):
     assignment = get_assignment_by_id(assignment_id)
     if not assignment:
@@ -159,7 +162,7 @@ def download_pdf(assignment_id: str):
     )
 
 
-@app.post("/export/docx")
+@api_router.post("/export/docx")
 async def export_docx(content: dict):
     assignment_id = str(uuid.uuid4())
     output_path = OUTPUTS_DIR / f"{assignment_id}_temp.docx"
@@ -175,7 +178,7 @@ async def export_docx(content: dict):
     )
 
 
-@app.post("/export/pdf")
+@api_router.post("/export/pdf")
 async def export_pdf(content: dict):
     assignment_id = str(uuid.uuid4())
     output_path = OUTPUTS_DIR / f"{assignment_id}_temp.pdf"
@@ -189,7 +192,7 @@ async def export_pdf(content: dict):
     )
 
 
-@app.get("/assignment/{assignment_id}")
+@api_router.get("/assignment/{assignment_id}")
 def get_assignment(assignment_id: str):
     assignment = get_assignment_by_id(assignment_id)
     if not assignment:
@@ -197,12 +200,12 @@ def get_assignment(assignment_id: str):
     return assignment
 
 
-@app.get("/history")
+@api_router.get("/history")
 def get_assignment_history():
     return {"history": get_history()}
 
 
-@app.post("/generate-image")
+@api_router.post("/generate-image")
 async def generate_image_endpoint(req: dict):
     prompt = req.get("prompt")
     api_key = req.get("openai_api_key") or os.environ.get("OPENAI_API_KEY", "")
@@ -228,13 +231,15 @@ async def generate_image_endpoint(req: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/history/{assignment_id}")
+@api_router.delete("/history/{assignment_id}")
 def delete_assignment(assignment_id: str):
-    conn = sqlite3.connect("assignmentforge.db")
+    conn = sqlite3.connect("/tmp/assignmentforge.db" if os.environ.get("VERCEL") else "assignmentforge.db")
     conn.execute("DELETE FROM assignments WHERE id = ?", (assignment_id,))
     conn.commit()
     conn.close()
     return {"status": "deleted"}
+
+app.include_router(api_router)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
-const API = 'http://localhost:8000'
+const API = '/api'
 
 export default function PreviewView({ generated }) {
   const [exporting, setExporting] = useState(false)

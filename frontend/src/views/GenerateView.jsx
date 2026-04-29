@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import axios from 'axios'
 
-const API = 'http://localhost:8000'
+const API = '/api'
 
 const STEPS = [
   'Analyzing assignment instructions...',
